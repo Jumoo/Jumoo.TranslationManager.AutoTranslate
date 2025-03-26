@@ -64,7 +64,6 @@ internal class AutomaticTranslationService
     public async Task TranslateAsync(IEnumerable<IContent> items, IEnumerable<string> cultures)
     {
         var sets = await GetSetsAsync(items, cultures);
-
         // this isn't actually bad, if the content doesn't belong to a set, it might be 
         // from a target site ?
         if (sets.Count == 0) return; 
@@ -79,8 +78,6 @@ internal class AutomaticTranslationService
         {
             // get the nodes
             var nodes = await CreateTranslationNodesAsync(set, items);
-
-            // create the jobs. 
             if (nodes.Count == 0) continue;
 
             // create the jobs
@@ -88,6 +85,7 @@ internal class AutomaticTranslationService
             if (jobs.Count == 0) continue;
             _logger.LogInformation("Auto created {count} jobs.", jobs.Count);
 
+            // submit the jobs. (do the work).
             var submittedJobs = await SubmitJobsAsync(jobs);
             if (submittedJobs.Count == 0) continue;
             _logger.LogInformation("Auto submitted {count} jobs.", submittedJobs.Count);
@@ -97,6 +95,13 @@ internal class AutomaticTranslationService
         }
     }
 
+    /// <summary>
+    ///  get the correct sets for the content items, 
+    /// </summary>
+    /// <remarks>
+    ///  gets the sets but only returns the ones that are valid 
+    ///  for the culture or not excluded by settings. 
+    /// </remarks>
     private async Task<List<TranslationSet>> GetSetsAsync(IEnumerable<IContent> items, IEnumerable<string> cultures)
     {
         var hasCultures = cultures.Any();

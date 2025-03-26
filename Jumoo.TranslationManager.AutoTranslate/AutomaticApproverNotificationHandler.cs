@@ -45,6 +45,10 @@ internal class AutomaticApproverNotificationHandler :
     {
         try
         {
+            // work out which cultures have just been published. 
+            // then when we are using variants we can work out if 
+            // this is the "master" culture and if we need to create
+            // a job. 
             var cultures = items.FirstOrDefault()?
                 .PublishCultureInfos?.Values
                 .Where(x => x.WasDirty())
