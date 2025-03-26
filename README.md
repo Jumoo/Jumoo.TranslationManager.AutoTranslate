@@ -1,5 +1,8 @@
 # Jumoo.TranslationManager.AutoTranslate
 
+[![NuGet](https://img.shields.io/nuget/vpre/Jumoo.TranslationManager.AutoTranslate?color=0273B3)](https://www.nuget.org/packages/Jumoo.TranslationManager.AutoTranslate)
+
+
 Sample code/package that will push things through translation
 on content save/publish.
 
