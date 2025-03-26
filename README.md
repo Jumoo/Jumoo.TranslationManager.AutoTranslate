@@ -1,0 +1,1 @@
+# Jumoo.TranslationManager.AutoTranslate
