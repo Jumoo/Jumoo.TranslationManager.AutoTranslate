@@ -4,7 +4,12 @@ using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
+
+#if NET10_0_OR_GREATER
+using Umbraco.Cms.Core.HostedServices;
+#else 
 using Umbraco.Cms.Infrastructure.HostedServices;
+#endif
 
 namespace Jumoo.TranslationManager.AutoTranslate;
 internal class AutomaticApproverNotificationHandler :

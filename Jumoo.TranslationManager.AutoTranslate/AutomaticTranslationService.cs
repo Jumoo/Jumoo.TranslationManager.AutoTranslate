@@ -2,12 +2,11 @@
 using Jumoo.TranslationManager.Core.Providers;
 using Jumoo.TranslationManager.Core.Services;
 
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop.Implementation;
 
 using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Models.Membership;
 using Umbraco.Cms.Core.Security;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
@@ -57,6 +56,7 @@ internal class AutomaticTranslationService
         _excludedSets = configuration.GetSection("Translation:Auto:ExcludeSets").Get<List<int>>() ?? new List<int>();
         _excludedCultures = configuration.GetSection("Translation:Auto:ExcludeCultures").Get<List<string>>() ?? new List<string>();
     }
+
 
     public async Task TranslateAsync(IEnumerable<int> ids, IEnumerable<string> cultures)
         => await TranslateAsync(_contentService.GetByIds(ids), cultures);
@@ -110,7 +110,7 @@ internal class AutomaticTranslationService
 
         foreach (var item in items)
         {
-            translationSets.AddRange(_setService.GetSetsByPath(item.Path));
+            translationSets.AddRange(await GetSetsByPathAsync(item.Path));
         }
 
         return translationSets
@@ -136,7 +136,7 @@ internal class AutomaticTranslationService
 
         foreach (var item in items)
         {
-            nodes.AddRange(_nodeService.CreateNodes(set, item, nodeOptions, sites));
+            nodes.AddRange(await CreateTranslationNodesAsync(set, item, nodeOptions, sites));
         }
 
         return nodes;
@@ -163,7 +163,7 @@ internal class AutomaticTranslationService
 
             var name = $"{firstNode.MasterNodeName} ({groupedNodes.Count()}) automatic translation to {firstNode.Culture.DisplayName}";
 
-            var job = _jobService.CreateJob(name, groupedNodes, provider, new object(), user?.Id ?? -1, jobOptions, groupId);
+            var job = await CreateJobAsync(name, groupedNodes, provider, new object(), user, jobOptions, groupId);
             if (job is null) continue;
 
             jobs.Add(job);
@@ -215,7 +215,11 @@ internal class AutomaticTranslationService
                 ApproveAllNodes = true,
                 Check = true,
                 Publish = true,
+#if NET10_0_OR_GREATER
+                UserKey = user?.Key ?? Guid.Empty,
+#else
                 UserId = user?.Id ?? -1,
+#endif
             });
 
             if (approvalResult is false)
@@ -229,4 +233,29 @@ internal class AutomaticTranslationService
 
     private ITranslationProvider? GetProvider(Guid providerKey)
         => _providers.GetProvider(providerKey);
+
+
+    // CROSS version code, so we can compile for both v13 and v17 versions here. 
+
+    private async Task<TranslationJob?> CreateJobAsync(string name, IEnumerable<TranslationNode> nodes, ITranslationProvider provider, object options, IUser? user, JobOptions jobOptions, string groupId)
+#if NET10_0_OR_GREATER
+        => await _jobService.CreateJobAsync(name, nodes, provider, options, user, jobOptions, groupId);
+#else
+        => _jobService.CreateJob(name, nodes, provider, options, user?.Id ?? -1, jobOptions, groupId);
+#endif
+    private async Task<IEnumerable<TranslationSet>> GetSetsByPathAsync(string path)
+#if NET10_0_OR_GREATER
+        => await _setService.GetSetsByPathAsync(path);
+#else
+        => _setService.GetSetsByPath(path);
+#endif
+
+
+    private async Task<IEnumerable<TranslationNode>> CreateTranslationNodesAsync(TranslationSet set, IContent item, NodeCreationOptions nodeCreationOptions, IEnumerable<TranslationSetSite> sites)
+#if NET10_0_OR_GREATER
+        => await _nodeService.CreateNodesAsync(set, item, nodeCreationOptions, sites);
+#else
+        => _nodeService.CreateNodes(set, item, nodeCreationOptions, sites);
+#endif
+
 }
