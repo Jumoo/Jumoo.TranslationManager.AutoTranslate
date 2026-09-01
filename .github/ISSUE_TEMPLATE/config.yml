@@ -1,0 +1,15 @@
+# Issues for this sample are not tracked here. They go to the public
+# Jumoo.TranslationManager.Issues repo, which covers Translation Manager and all of its
+# connectors/samples together - most reports involve more than just this repo.
+blank_issues_enabled: false
+
+contact_links:
+  - name: Report a bug or request a feature
+    url: https://github.com/Jumoo/Jumoo.TranslationManager.Issues/issues/new/choose
+    about: Issues for this sample are tracked in the public Translation Manager issues repo.
+
+  # /security/policy rather than a blob url - it resolves whatever the default branch
+  # is, so it survives the branch being renamed per Umbraco major.
+  - name: Report a security issue
+    url: https://github.com/Jumoo/Jumoo.TranslationManager.AutoTranslate/security/policy
+    about: Please do not report security problems in public. Email info@jumoo.co.uk instead.

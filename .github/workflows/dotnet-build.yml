@@ -1,0 +1,44 @@
+name: PR Project Build
+
+permissions:
+  contents: read
+
+# NOTE: this repo releases from "v17/main" - a branch per Umbraco major, matching the
+# rest of Jumoo. Plain "main" is kept in the filter so a re-created main, or a branch
+# that hasn't been moved over yet, still builds. A sibling repo had a workflow that
+# silently never ran because its filter didn't match the branch it was meant to watch.
+on:
+  pull_request:
+    branches: [ "main", "*/main" ]
+    paths-ignore:
+      - "**.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  config: Release
+  # NOTE: not the solution - *.slnx is not part of the published package, and the
+  # AutoApprove.Site17 test site is gitignored. The sample project is the whole of what ships.
+  package_project: ./Jumoo.TranslationManager.AutoTranslate/Jumoo.TranslationManager.AutoTranslate.csproj
+
+jobs:
+  build-project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: restore
+        run: dotnet restore ${{ env.package_project }}
+
+      - name: build
+        run: >
+          dotnet build ${{ env.package_project }}
+          -c ${{ env.config }} --no-restore
+          -p:ContinuousIntegrationBuild=true
