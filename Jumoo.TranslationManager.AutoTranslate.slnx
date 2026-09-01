@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="AutoApprove.Site17/AutoApprove.Site17.csproj" />
+  <Project Path="Jumoo.TranslationManager.AutoTranslate/Jumoo.TranslationManager.AutoTranslate.csproj" />
+</Solution>
